@@ -19,4 +19,10 @@ type StudentProps = {
   details: StudentDetailsProps[];
 };
 
-export type { StudentProps, StudentDetailsProps };
+type StudentPropsWithoutIdAndDetails = Omit<StudentProps, "id" | "details">;
+
+export type {
+  StudentProps,
+  StudentDetailsProps,
+  StudentPropsWithoutIdAndDetails,
+};

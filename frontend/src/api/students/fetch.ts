@@ -1,4 +1,8 @@
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
+
 import axiosInstance from "@/api/axiosInstance";
+import { errorMessage } from "@/lib/errorMessage";
 import { formatDate } from "@/lib/format-date";
 import { StudentDetailsProps, StudentProps } from "@/types/types";
 
@@ -9,15 +13,26 @@ export async function getStudents(query: string) {
     const res = await axiosInstance.get(`api/students/?search=${query}`);
     if (res.status === 200) {
       return res.data;
-    } else {
-      throw new Error("Failed to fetch data");
     }
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
-export async function createStudent(values: StudentProps) {
+export async function createStudent(values: StudentProps, showToast?: boolean) {
   try {
     const res = await axiosInstance.post("api/students/", {
       student_id: values.student_id,
@@ -29,20 +44,50 @@ export async function createStudent(values: StudentProps) {
       township: values.township,
       NRC: values.NRC,
     });
-    return res.data;
+    if (res.status === 201) {
+      if (showToast !== false) {
+        toast.success("Student creation has successfully!");
+      }
+    }
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
 export async function deleteStudent(id: string) {
   try {
-    const res = await axiosInstance.delete(`api/students/delete/${id}/`);
+    const res = await axiosInstance.delete(`api/students/${id}/`);
     if (res.status === 204) {
-      return { message: "Student deleted successfully!" };
+      toast.success("Student has deleted successfully!");
     }
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
@@ -58,9 +103,25 @@ export async function updateStudent(id: string, values: StudentProps) {
       township: values.township,
       NRC: values.NRC,
     });
-    return res.data;
+    if (res.status === 200) {
+      toast.success("Student has been updated successfully");
+      return res.data;
+    }
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
@@ -80,7 +141,20 @@ export async function updateStudentDetail(
       return { message: "Student Details Updated successfully" };
     }
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
@@ -89,7 +163,20 @@ export async function getStudentById(id: string) {
     const res = await axiosInstance.get(`api/students/${id}/`);
     return res.data;
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
@@ -105,9 +192,11 @@ export async function createStudentDetails(
       student: id,
       mark3: values.mark3,
     });
-    return res.data;
+    if (res.status === 201) {
+      return res.data;
+    }
   } catch (error) {
-    console.log(error);
+    return { message: error };
   }
 }
 
@@ -116,7 +205,20 @@ export async function getStudentDetails(id: string) {
     const res = await axiosInstance.get(`api/studentdetails/${id}/`);
     return res.data;
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }
 
@@ -125,6 +227,19 @@ export async function deleteStudentDetails(id: string) {
     const res = await axiosInstance.delete(`api/studentdetails/${id}/`);
     return res.data;
   } catch (error) {
-    console.log(error);
+    if (error instanceof AxiosError) {
+      toast.error(errorMessage(error.response?.data), {
+        style: {
+          backgroundColor: "red",
+          color: "white",
+        },
+        iconTheme: {
+          primary: "red",
+          secondary: "white",
+        },
+      });
+    } else {
+      console.log(error);
+    }
   }
 }

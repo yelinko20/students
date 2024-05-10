@@ -6,7 +6,10 @@ export const authValidators = z.object({
 });
 
 export const studentDetailValidator = z.object({
-  year: z.coerce.string({ required_error: "year is required!" }).max(4),
+  year: z.coerce
+    .string({ required_error: "year is required!" })
+    .min(4, { message: "year must be at least 4 length" })
+    .max(4, { message: "year must be at most 4 length" }),
   mark1: z.coerce.number({ required_error: "mark one is required!" }),
   mark2: z.coerce.number({ required_error: "mark two is required!" }),
   mark3: z.coerce.number({ required_error: "mark three is required!" }),
@@ -39,7 +42,10 @@ export const studentFormValidator = z.object({
     .min(1, { message: "Email is required!" })
     .email({ message: "must be validated email" })
     .trim(),
-  township: z.string({ required_error: "Township is required!" }).max(100),
+  township: z
+    .string({ required_error: "Township is required!" })
+    .min(1, { message: "Township is required!" })
+    .max(100),
   address: z.string({ required_error: "Address is required!" }),
   details: z.array(studentDetailValidator),
 });

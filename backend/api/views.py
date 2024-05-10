@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .models import Student, StudentDetails
 from .serializers import StudentSerializer, StudentDetailsSerializer
-import xlwt
-
+from django.db.models import F 
+import pandas as pd
+import os
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.prefetch_related('details').order_by("student_id")  
     serializer_class = StudentSerializer
@@ -97,47 +98,46 @@ class StudentDetailsViewSet(viewsets.ModelViewSet):
 
 
 class ExportExcelView(views.APIView):
-    def get(self, request, *args, **kwargs):
-        students = Student.objects.all()
-        
-        # Serialize the data
-        student_serializer = StudentSerializer(students, many=True)
-        student_data = student_serializer.data
-        print(student_data)
-        
-        student_details_data = []
-        for student in students:
-            details = student.details.all()
-            details_serializer = StudentDetailsSerializer(details, many=True)
-            student_details_data.extend(details_serializer.data)
-        
-        # Create Excel file
-        # response = HttpResponse(content_type='application/ms-excel')
-        # response['Content-Disposition'] = 'attachment; filename="exported_data.xls"'
-        
-        # workbook = xlwt.Workbook()
-        # student_sheet = workbook.add_sheet('Students')
-        # student_details_sheet = workbook.add_sheet('Student Details')
-        
-        # # Write headers for Students sheet
-        # student_headers = list(student_data[0].keys())
-        # for col, header in enumerate(student_headers):
-        #     student_sheet.write(0, col, header)
-        
-        # # Write data rows for Students sheet
-        # for row, item in enumerate(student_data, start=1):
-        #     for col, value in enumerate(item.values()):
-        #         student_sheet.write(row, col, value)
-        
-        # # Write headers for Student Details sheet
-        # student_details_headers = list(student_details_data[0].keys())
-        # for col, header in enumerate(student_details_headers):
-        #     student_details_sheet.write(0, col, header)
-        
-        # # Write data rows for Student Details sheet
-        # for row, item in enumerate(student_details_data, start=1):
-        #     for col, value in enumerate(item.values()):
-        #         student_details_sheet.write(row, col, value)
-        
-        # workbook.save(response)
-        # return response
+    # Removed permission_classes
+
+    def post(self, request):
+        try:
+            # Fetch student data with related details using select_related
+            students = Student.objects.select_related('details').all().values(
+                'student_id', 'name', 'phone', 'email', 'date_of_birth', 'address', 'township', 'NRC',
+                details__year=F('details__year'),
+                details__mark1=F('details__mark1'),
+                details__mark2=F('details__mark2'),
+                details__mark3=F('details__mark3'),
+                details__total_marks=F('details__total_marks'),
+            )
+
+            # Convert to pandas DataFrame and exclude unnecessary fields (id)
+            df = pd.DataFrame(students)
+            df.drop(columns=['id'], inplace=True)
+
+            # Handle potential file existence & overwrite (optional)
+            if os.path.exists("Student_Details.xlsx"):  # Changed filename to avoid overwrite
+                overwrite_confirmation = request.POST.get('overwrite', False)
+                if not overwrite_confirmation:
+                    return Response({
+                        "status": False,
+                        "message": "File 'Student_Details.xlsx' already exists. Please confirm overwrite or choose a different filename."
+                    }, status=status.HTTP_409_CONFLICT)
+
+            # Create the Excel file with appropriate headers and formatting (optional)
+            writer = pd.ExcelWriter("Student_Details.xlsx", engine='xlsxwriter')
+            df.to_excel(writer, sheet_name='Students_with_Details', index=False)  # Customize sheet name
+
+            # Add headers, formatting, or other customizations using workbook/worksheet objects (optional)
+            # ... (your Excel formatting logic here)
+
+            writer.save()
+
+            return HttpResponse(writer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": "An error occurred during export: " + str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

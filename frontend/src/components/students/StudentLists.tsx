@@ -36,10 +36,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StudentProps } from "@/types/types";
+import { StudentProps, StudentPropsWithoutIdAndDetails } from "@/types/types";
 import { deleteStudent, getStudents } from "@/api/students/fetch";
 import { Link } from "react-router-dom";
 import { DataTablePagination } from "../DataTablePagination";
+import ExcelExport from "@/components/ExcelExport";
+import ExcelImport from "@/components/ExcelImport";
 
 export const columns: ColumnDef<StudentProps>[] = [
   {
@@ -130,7 +132,6 @@ export const columns: ColumnDef<StudentProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const student = row.original;
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -161,7 +162,9 @@ export const columns: ColumnDef<StudentProps>[] = [
             <DropdownMenuItem
               onClick={async () => {
                 await deleteStudent(student.id);
-                window.location.reload();
+                setTimeout(() => {
+                  window.location.assign("/");
+                }, 1000);
               }}
             >
               Delete
@@ -218,9 +221,15 @@ export default function StudentLists() {
     },
   });
 
+  const modifiedData: StudentPropsWithoutIdAndDetails[] = data.map(
+    ({ id, details, ...rest }) => rest
+  );
+
   return (
-    <div>
-      <div className="text-end mb-6">
+    <div className="relative">
+      <div className="flex justify-end items-center gap-8 mb-6">
+        <ExcelImport />
+        <ExcelExport data={modifiedData} />
         <Link to={"/add-student"}>
           <Button>Create</Button>
         </Link>

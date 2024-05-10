@@ -43,8 +43,6 @@ import {
 } from "@/api/students/fetch";
 import { StudentDetailsProps, StudentProps } from "@/types/types";
 
-let renderCount = 0;
-
 export default function StudentForm({
   initialValues,
 }: {
@@ -92,15 +90,17 @@ export default function StudentForm({
           year: detail.year || "",
         }));
         if (data.details) {
-          detailsArray.map(async (d) => {
-            // @ts-ignore
+          await Promise.all(
+            detailsArray.map(async (d) => {
+              // @ts-ignore
 
-            if (d.id === null) {
-              await createStudentDetails(data.id, d as StudentDetailsProps);
-            } else {
-              await updateStudentDetail(data.id, d as StudentDetailsProps);
-            }
-          });
+              if (d.id === null) {
+                await createStudentDetails(data.id, d as StudentDetailsProps);
+              } else {
+                await updateStudentDetail(data.id, d as StudentDetailsProps);
+              }
+            })
+          );
         }
 
         if (data.details) {
@@ -109,7 +109,9 @@ export default function StudentForm({
           const idsNotProcessed = data.details
             .filter((detail) => !processedIds.includes(detail.id))
             .map((detail) => detail.id);
-          idsNotProcessed.map(async (id) => await deleteStudentDetails(id));
+          await Promise.all(
+            idsNotProcessed.map(async (id) => await deleteStudentDetails(id))
+          );
         }
       } else {
         // @ts-ignore
@@ -121,12 +123,13 @@ export default function StudentForm({
           );
         }
       }
-      form.reset();
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
-      window.location.assign("/");
     }
   }
 
@@ -160,8 +163,6 @@ export default function StudentForm({
       return total;
     }
   };
-
-  renderCount++;
 
   return (
     <FormWrapper
@@ -351,7 +352,7 @@ export default function StudentForm({
           <div>
             <div className="text-right">
               <div></div>
-              <Button onClick={addStudentDetail}>
+              <Button type="button" onClick={addStudentDetail}>
                 Add Student Details
                 <PlusCircle className="ml-3" />
               </Button>
@@ -457,6 +458,7 @@ export default function StudentForm({
                     <Button
                       variant="destructive"
                       size="icon"
+                      type="button"
                       onClick={() => remove(index)}
                     >
                       <Trash2 />
