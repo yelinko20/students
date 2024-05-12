@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import DetailTable from "./DetailTable";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export default function StudentDetails() {
   const { id } = useParams();
@@ -39,38 +40,55 @@ export default function StudentDetails() {
     <>
       {studentData && (
         <Card>
-          <CardHeader>
-            <CardTitle>{studentData.name}</CardTitle>
-            <div className="grid grid-cols-3 gap-6">
+          <CardHeader className={cn("flex flex-col gap-4")}>
+            <div className="w-full flex justify-center">
+              <Avatar
+                className={cn(
+                  "relative w-24 h-24 flex items-center justify-center"
+                )}
+              >
+                <AvatarImage
+                  src={studentData.image}
+                  className={cn("object-cover")}
+                />
+                <AvatarFallback className={cn("relative p-0")}>
+                  {studentData.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <CardTitle className={cn("text-center")}>
+              {studentData.name}
+            </CardTitle>
+            <div className="grid grid-cols-3 gap-6 mt-8">
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Student ID</div>
-                <div>{studentData.student_id}</div>
+                <span>Student ID</span>
+                <span>{studentData.student_id}</span>
               </CardDescription>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Phone</div>
-                <div>{studentData.phone}</div>
+                <span>Phone</span>
+                <span>{studentData.phone}</span>
               </CardDescription>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Email</div>
-                <div>{studentData.email}</div>
+                <span>Email</span>
+                <span>{studentData.email}</span>
               </CardDescription>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>NRC</div>
-                <div>{studentData.NRC}</div>
+                <span>NRC</span>
+                <span>{studentData.NRC}</span>
               </CardDescription>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Date of Birth</div>
-                <div>{studentData.date_of_birth}</div>
+                <span>Date of Birth</span>
+                <span>{studentData.date_of_birth}</span>
               </CardDescription>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Township</div>
-                <div>{studentData.township}</div>
+                <span>Township</span>
+                <span>{studentData.township}</span>
               </CardDescription>
             </div>
-            <div className="pt-4">
+            <div>
               <CardDescription className={cn("flex items-center gap-6")}>
-                <div>Address</div>
-                <div>{studentData.address}</div>
+                <span>Address</span>
+                <span>{studentData.address}</span>
               </CardDescription>
             </div>
           </CardHeader>

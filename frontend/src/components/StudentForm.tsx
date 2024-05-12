@@ -1,24 +1,25 @@
 import * as z from "zod";
-import { useMemo, useState } from "react";
-import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CalendarIcon, Camera, PlusCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { FormWrapper } from "@/components/form-wrapper";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { studentFormValidator } from "@/schemas/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getImageData } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -38,25 +39,54 @@ import {
   createStudent,
   createStudentDetails,
   deleteStudentDetails,
+  fetchImageAndConvert,
   updateStudent,
   updateStudentDetail,
 } from "@/api/students/fetch";
 import { StudentDetailsProps, StudentProps } from "@/types/types";
+import nullProfileImage from "@/assets/null-profile.svg";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function StudentForm({
   initialValues,
 }: {
   initialValues?: StudentProps;
 }) {
-  const navigate = useNavigate();
   const { id } = useParams();
   const isUpdate = useMemo(() => !!id, [id]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [file, setFile] = useState<File | null>(null);
 
-  const defaultValues = isUpdate
-    ? initialValues
-    : {
+  useEffect(() => {
+    const fetchAndConvertImage = async () => {
+      if (initialValues?.image) {
+        const data = await fetchImageAndConvert(initialValues.image);
+        if (data) {
+          setFile(data.imageFile);
+          const previewUrl = URL.createObjectURL(data.blob);
+          setPreview(previewUrl);
+        }
+      }
+    };
+
+    fetchAndConvertImage();
+  }, [initialValues?.image]);
+
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState("");
+
+  const defaultValues = useMemo(() => {
+    if (initialValues) {
+      return {
+        ...initialValues,
+        image: file,
+      };
+    } else {
+      return {
         student_id: "",
+        image: null,
         name: "",
         NRC: "",
         email: "",
@@ -65,11 +95,14 @@ export default function StudentForm({
         township: "",
         details: [{ mark1: 0, mark2: 0, mark3: 0, year: "", totalMarks: 0 }],
       };
+    }
+  }, [initialValues, file]);
 
   const form = useForm<z.infer<typeof studentFormValidator>>({
     resolver: zodResolver(studentFormValidator),
     defaultValues,
   });
+
   // @ts-ignore
   async function formSubmit(values: z.infer<typeof studentFormValidator>) {
     setIsLoading(true);
@@ -81,7 +114,6 @@ export default function StudentForm({
           initialValues!.id,
           values as StudentProps
         )) as StudentProps;
-
         detailsArray = values.details.map((detail, index) => ({
           id: data.details[index]?.id ?? null,
           mark1: detail.mark1 || null,
@@ -93,7 +125,6 @@ export default function StudentForm({
           await Promise.all(
             detailsArray.map(async (d) => {
               // @ts-ignore
-
               if (d.id === null) {
                 await createStudentDetails(data.id, d as StudentDetailsProps);
               } else {
@@ -102,10 +133,8 @@ export default function StudentForm({
             })
           );
         }
-
         if (data.details) {
           const processedIds = detailsArray.map((d) => d.id);
-
           const idsNotProcessed = data.details
             .filter((detail) => !processedIds.includes(detail.id))
             .map((detail) => detail.id);
@@ -117,9 +146,11 @@ export default function StudentForm({
         // @ts-ignore
         const data = (await createStudent(values)) as StudentProps;
         if (data) {
-          values.details.map(
-            async (d) =>
-              await createStudentDetails(data.id, d as StudentDetailsProps)
+          await Promise.all(
+            values.details.map(
+              async (d) =>
+                await createStudentDetails(data.id, d as StudentDetailsProps)
+            )
           );
         }
       }
@@ -132,6 +163,12 @@ export default function StudentForm({
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (isUpdate && file) {
+      form.setValue("image", file);
+    }
+  }, [isUpdate, file]);
 
   const { fields, append, remove } = useFieldArray({
     name: "details",
@@ -171,6 +208,73 @@ export default function StudentForm({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(formSubmit)} className="space-y-4">
+          <div className="flex flex-col relative items-center justify-center">
+            <Avatar className={cn("relative w-32 h-32")}>
+              <AvatarImage src={preview} className={cn("object-cover")} />
+              <AvatarFallback className={cn("relative p-0")}>
+                <img
+                  src={nullProfileImage}
+                  alt="null profile image"
+                  className="w-full h-full object-cover"
+                />
+              </AvatarFallback>
+            </Avatar>
+            {preview ? (
+              <Button
+                type="button"
+                size="icon"
+                variant="destructive"
+                className={cn("absolute bottom-0 right-[44%] rounded-full")}
+                onClick={() => setPreview("")}
+              >
+                <Trash2 />
+              </Button>
+            ) : (
+              <Button
+                size="icon"
+                variant="outline"
+                type="button"
+                className={cn("absolute bottom-8 right-[44%] rounded-full")}
+                onClick={() => {
+                  imageInputRef.current?.click();
+                }}
+              >
+                <Camera className=" text-gray-400" />
+              </Button>
+            )}
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field: { onChange, value, ...rest } }) => (
+                <>
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        {...rest}
+                        onChange={(event) => {
+                          const { files, imageUrl } = getImageData(event);
+                          setPreview(imageUrl);
+                          onChange(files);
+                          event.target.value = "";
+                        }}
+                        ref={imageInputRef}
+                        className="hidden"
+                      />
+                    </FormControl>
+                    <FormDescription
+                      className={cn(preview ? "hidden" : "block")}
+                    >
+                      Upload Student Image
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                </>
+              )}
+            />
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <FormField
               control={form.control}
@@ -371,7 +475,7 @@ export default function StudentForm({
                       <FormItem>
                         <FormLabel>Year</FormLabel>
                         <FormControl>
-                          <Input placeholder="Year" {...field} required />
+                          <Input placeholder="Year" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -387,8 +491,8 @@ export default function StudentForm({
                           <Input
                             placeholder="Add Mark 1"
                             type="number"
-                            min={1}
-                            max={100}
+                            // min={1}
+                            // max={100}
                             {...field}
                           />
                         </FormControl>
@@ -406,8 +510,8 @@ export default function StudentForm({
                           <Input
                             placeholder="Add Mark 2"
                             type="number"
-                            min={1}
-                            max={100}
+                            // min={1}
+                            // max={100}
                             {...field}
                           />
                         </FormControl>
@@ -426,8 +530,8 @@ export default function StudentForm({
                             placeholder="Add Mark 3"
                             type="number"
                             {...field}
-                            min={1}
-                            max={100}
+                            // min={1}
+                            // max={100}
                           />
                         </FormControl>
                         <FormMessage />

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .models import Student, StudentDetails
 from .serializers import StudentSerializer, StudentDetailsSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import F 
 import pandas as pd
 import os
@@ -12,6 +13,8 @@ class StudentViewSet(viewsets.ModelViewSet):
     serializer_class = StudentSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'student_id']
+    parser_classes = (MultiPartParser, FormParser)
+
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())

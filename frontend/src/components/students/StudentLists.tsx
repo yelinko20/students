@@ -36,7 +36,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StudentProps, StudentPropsWithoutIdAndDetails } from "@/types/types";
+import {
+  StudentProps,
+  StudentPropsWithoutIdAndDetailsAndImage,
+} from "@/types/types";
 import { deleteStudent, getStudents } from "@/api/students/fetch";
 import { Link } from "react-router-dom";
 import { DataTablePagination } from "../DataTablePagination";
@@ -221,8 +224,8 @@ export default function StudentLists() {
     },
   });
 
-  const modifiedData: StudentPropsWithoutIdAndDetails[] = data.map(
-    ({ id, details, ...rest }) => rest
+  const modifiedData: StudentPropsWithoutIdAndDetailsAndImage[] = data.map(
+    ({ id, details, image, ...rest }) => rest
   );
 
   return (
@@ -273,23 +276,20 @@ export default function StudentLists() {
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <>
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      </>
-                    );
-                  })}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
+
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
@@ -308,7 +308,7 @@ export default function StudentLists() {
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
+                <TableRow key="no-results">
                   <TableCell
                     colSpan={columns.length}
                     className="h-24 text-center"

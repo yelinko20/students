@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { StudentPropsWithoutIdAndDetails } from "@/types/types";
+import { StudentPropsWithoutIdAndDetailsAndImage } from "@/types/types";
 import * as XLSX from "xlsx";
 
 export default function ExcelExport({
   data,
 }: {
-  data: StudentPropsWithoutIdAndDetails[];
+  data: StudentPropsWithoutIdAndDetailsAndImage[];
 }) {
   const fileType = "xlsx";
 

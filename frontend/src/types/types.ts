@@ -8,6 +8,7 @@ type StudentDetailsProps = {
 
 type StudentProps = {
   id: string;
+  image?: string;
   name: string;
   student_id: string;
   NRC: string;
@@ -19,10 +20,13 @@ type StudentProps = {
   details: StudentDetailsProps[];
 };
 
-type StudentPropsWithoutIdAndDetails = Omit<StudentProps, "id" | "details">;
+type StudentPropsWithoutIdAndDetailsAndImage = Omit<
+  StudentProps,
+  "id" | "details" | "image"
+>;
 
 export type {
   StudentProps,
   StudentDetailsProps,
-  StudentPropsWithoutIdAndDetails,
+  StudentPropsWithoutIdAndDetailsAndImage,
 };

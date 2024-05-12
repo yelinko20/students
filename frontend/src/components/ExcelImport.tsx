@@ -10,9 +10,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-import { createStudent } from "@/api/students/fetch";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
+import axiosInstance from "@/api/axiosInstance";
+import { StudentProps } from "@/types/types";
+import { formatDate } from "@/lib/format-date";
+import { AxiosError } from "axios";
 
 type RowData = {
   [key: string]: string | number;
@@ -57,19 +60,46 @@ export default function ExcelImport() {
     setIsLoading(true);
     try {
       await Promise.all(
-        importedData.map(async (data) => {
-          // @ts-ignore
-          await createStudent(data, false);
-          // toast.success("Excel Import is successful!");
+        // @ts-ignore
+        importedData.map(async (values: StudentProps) => {
+          const formData = new FormData();
+
+          if (values.image && typeof values.image === "object") {
+            // @ts-ignore
+            if (values.image instanceof File) {
+              formData.append("image", values.image);
+            } else {
+              console.warn("No image file provided for student creation.");
+            }
+          }
+          formData.append("student_id", values.student_id);
+          formData.append("name", values.name);
+          formData.append("email", values.email);
+          formData.append("phone", values.phone);
+          formData.append("date_of_birth", formatDate(values.date_of_birth));
+          formData.append("address", values.address);
+          formData.append("township", values.township);
+          formData.append("NRC", values.NRC);
+
+          await axiosInstance.post("api/students/", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
         })
       );
+      toast.success("Excel Import is successful!");
     } catch (error) {
-      console.error("Error occurred during import:", error);
+      if (error instanceof AxiosError) {
+        toast.error("Some of your excel data already exists!");
+      } else {
+        toast.error("An error occurred while importing data.");
+      }
     } finally {
       setTimeout(() => {
         setIsLoading(false);
-        window.location.assign("/");
         setShowImportInput(false);
+        window.location.assign("/");
       }, 2000);
     }
   }
@@ -81,14 +111,18 @@ export default function ExcelImport() {
         <div className="fixed top-0 z-10 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-50">
           <Card>
             <CardHeader>
-              <CardTitle>Upload your excel file</CardTitle>
+              <CardTitle>
+                {importedData.length
+                  ? "Your Excel Data Preview"
+                  : "Upload your excel file"}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {importedData.length ? (
                 <div
                   className={cn("mt-4", importedData.length ? "" : "hidden")}
                 >
-                  <h2 className="text-xl font-semibold mb-2">Imported Data</h2>
+                  {/* <h2 className="text-xl font-semibold mb-2">Imported Data</h2> */}
                   <table className="border-collapse border border-gray-400">
                     <thead>
                       <tr className="bg-gray-200">
@@ -131,7 +165,10 @@ export default function ExcelImport() {
             <CardFooter className="flex justify-between items-center">
               <Button
                 variant="outline"
-                onClick={() => setShowImportInput(false)}
+                onClick={() => {
+                  setShowImportInput(false);
+                  setImportedData([]);
+                }}
                 disabled={importing}
               >
                 Cancel

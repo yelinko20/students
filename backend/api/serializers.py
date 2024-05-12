@@ -20,4 +20,4 @@ class StudentSerializer(serializers.ModelSerializer):
     details = StudentDetailsSerializer(many=True, read_only=True)
     class Meta:
         model = Student
-        fields = ('id', 'student_id', 'name', 'phone', 'email', 'date_of_birth', 'address', 'township', 'NRC', 'details')
+        fields = ('id','image' ,'student_id', 'name', 'phone', 'email', 'date_of_birth', 'address', 'township', 'NRC', 'details')

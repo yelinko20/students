@@ -1,8 +1,12 @@
 from django.db import models
 import uuid
 
+def upload_to(instance, filename):
+    return 'images/{filename}'.format(filename=filename)
+
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     student_id = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
