@@ -9,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, getInitialLetter } from "@/lib/utils";
 import DetailTable from "./DetailTable";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function StudentDetails() {
   const { id } = useParams();
@@ -35,7 +35,6 @@ export default function StudentDetails() {
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
   return (
     <>
       {studentData && (
@@ -52,7 +51,9 @@ export default function StudentDetails() {
                   className={cn("object-cover")}
                 />
                 <AvatarFallback className={cn("relative p-0")}>
-                  {studentData.name.charAt(0)}
+                  <span className="text-4xl">
+                    {getInitialLetter(studentData.name)}
+                  </span>
                 </AvatarFallback>
               </Avatar>
             </div>

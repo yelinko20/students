@@ -36,15 +36,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  StudentProps,
-  StudentPropsWithoutIdAndDetailsAndImage,
-} from "@/types/types";
+import { StudentProps } from "@/types/types";
 import { deleteStudent, getStudents } from "@/api/students/fetch";
 import { Link } from "react-router-dom";
 import { DataTablePagination } from "../DataTablePagination";
 import ExcelExport from "@/components/ExcelExport";
 import ExcelImport from "@/components/ExcelImport";
+import { combineDetailWithStudent } from "@/lib/utils";
 
 export const columns: ColumnDef<StudentProps>[] = [
   {
@@ -81,32 +79,24 @@ export const columns: ColumnDef<StudentProps>[] = [
   },
   {
     accessorKey: "NRC",
-    header: () => <div className="text-right">NRC</div>,
+    header: () => <div>NRC</div>,
     cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium">{row.getValue("NRC")}</div>
-      );
+      return <div className="font-medium">{row.getValue("NRC")}</div>;
     },
   },
   {
     accessorKey: "phone",
-    header: () => <div className="text-right">Phone</div>,
+    header: () => <div>Phone</div>,
     cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium w-32">
-          {row.getValue("phone")}
-        </div>
-      );
+      return <div className="font-medium w-32">{row.getValue("phone")}</div>;
     },
   },
   {
     accessorKey: "date_of_birth",
-    header: () => <div className="text-right">Date Of Birth</div>,
+    header: () => <div>Date Of Birth</div>,
     cell: ({ row }) => {
       return (
-        <div className="text-right font-medium w-32">
-          {row.getValue("date_of_birth")}
-        </div>
+        <div className="font-medium w-32">{row.getValue("date_of_birth")}</div>
       );
     },
   },
@@ -164,7 +154,7 @@ export const columns: ColumnDef<StudentProps>[] = [
             </>
             <DropdownMenuItem
               onClick={async () => {
-                await deleteStudent(student.id);
+                await deleteStudent(student.id as string);
                 setTimeout(() => {
                   window.location.assign("/");
                 }, 1000);
@@ -224,13 +214,16 @@ export default function StudentLists() {
     },
   });
 
-  const modifiedData: StudentPropsWithoutIdAndDetailsAndImage[] = data.map(
-    ({ id, details, image, ...rest }) => rest
-  );
+  // const modifiedData: StudentPropsWithoutIdAndImage[] = data.map(
+  //   ({ id, image, ...rest }) => rest
+  // );
+
+  const modifiedData = combineDetailWithStudent(data);
 
   return (
     <div className="relative">
       <div className="flex justify-end items-center gap-8 mb-6">
+        <span>Total Counts: {data.length}</span>
         <ExcelImport />
         <ExcelExport data={modifiedData} />
         <Link to={"/add-student"}>

@@ -94,6 +94,7 @@ export async function createStudent(values: StudentProps) {
     });
     if (res.status === 201) {
       toast.success("Student creation is successful!");
+      return res.data;
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -255,7 +256,7 @@ export async function createStudentDetails(
       return res.data;
     }
   } catch (error) {
-    return { message: error };
+    console.log(error);
   }
 }
 

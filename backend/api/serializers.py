@@ -15,8 +15,6 @@ class StudentDetailsSerializer(serializers.ModelSerializer):
         return super().to_representation(instance)
     
 class StudentSerializer(serializers.ModelSerializer):
-    # details = StudentDetailsSerializer(source='studentdetails_set', many=True, read_only=True)  # Nested serializer
-
     details = StudentDetailsSerializer(many=True, read_only=True)
     class Meta:
         model = Student

@@ -19,7 +19,7 @@ import { studentFormValidator } from "@/schemas/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn, getImageData } from "@/lib/utils";
+import { cn, getImageData, getInitialLetter } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -75,7 +75,7 @@ export default function StudentForm({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
 
   const defaultValues = useMemo(() => {
     if (initialValues) {
@@ -111,7 +111,7 @@ export default function StudentForm({
       if (isUpdate) {
         // @ts-ignore
         const data = (await updateStudent(
-          initialValues!.id,
+          initialValues?.id as string,
           values as StudentProps
         )) as StudentProps;
         detailsArray = values.details.map((detail, index) => ({
@@ -126,9 +126,15 @@ export default function StudentForm({
             detailsArray.map(async (d) => {
               // @ts-ignore
               if (d.id === null) {
-                await createStudentDetails(data.id, d as StudentDetailsProps);
+                await createStudentDetails(
+                  data.id as string,
+                  d as StudentDetailsProps
+                );
               } else {
-                await updateStudentDetail(data.id, d as StudentDetailsProps);
+                await updateStudentDetail(
+                  data.id as string,
+                  d as StudentDetailsProps
+                );
               }
             })
           );
@@ -136,10 +142,12 @@ export default function StudentForm({
         if (data.details) {
           const processedIds = detailsArray.map((d) => d.id);
           const idsNotProcessed = data.details
-            .filter((detail) => !processedIds.includes(detail.id))
+            .filter((detail) => !processedIds.includes(detail.id as string))
             .map((detail) => detail.id);
           await Promise.all(
-            idsNotProcessed.map(async (id) => await deleteStudentDetails(id))
+            idsNotProcessed.map(
+              async (id) => await deleteStudentDetails(id as string)
+            )
           );
         }
       } else {
@@ -149,7 +157,10 @@ export default function StudentForm({
           await Promise.all(
             values.details.map(
               async (d) =>
-                await createStudentDetails(data.id, d as StudentDetailsProps)
+                await createStudentDetails(
+                  data.id as string,
+                  d as StudentDetailsProps
+                )
             )
           );
         }
@@ -210,14 +221,23 @@ export default function StudentForm({
         <form onSubmit={form.handleSubmit(formSubmit)} className="space-y-4">
           <div className="flex flex-col relative items-center justify-center">
             <Avatar className={cn("relative w-32 h-32")}>
-              <AvatarImage src={preview} className={cn("object-cover")} />
-              <AvatarFallback className={cn("relative p-0")}>
-                <img
-                  src={nullProfileImage}
-                  alt="null profile image"
-                  className="w-full h-full object-cover"
-                />
-              </AvatarFallback>
+              {preview ? (
+                <>
+                  <AvatarImage src={preview!} className={cn("object-cover")} />
+                  <AvatarFallback>
+                    <span className="text-4xl">
+                      {getInitialLetter(form.getValues("name"))}
+                    </span>
+                  </AvatarFallback>
+                </>
+              ) : (
+                <>
+                  <AvatarImage
+                    src={nullProfileImage}
+                    alt="null profile image"
+                  ></AvatarImage>
+                </>
+              )}
             </Avatar>
             {preview ? (
               <Button
@@ -544,7 +564,7 @@ export default function StudentForm({
                     name={`details.${index}.total_marks`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Toatl Marks</FormLabel>
+                        <FormLabel>Total Marks</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Total Marks"
