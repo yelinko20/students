@@ -145,3 +145,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 APPEND_SLASH=False
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'api.paginations.CustomPagination',
+}

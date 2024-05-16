@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import {
-  CaretSortIcon,
-  ChevronDownIcon,
-  DotsHorizontalIcon,
-} from "@radix-ui/react-icons";
-import {
-  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -22,9 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -37,137 +30,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StudentProps } from "@/types/types";
-import { deleteStudent, getStudents } from "@/api/students/fetch";
-import { Link } from "react-router-dom";
-import { DataTablePagination } from "../DataTablePagination";
+import { getStudents } from "@/api/students/fetch";
 import ExcelExport from "@/components/ExcelExport";
 import ExcelImport from "@/components/ExcelImport";
-import { combineDetailWithStudent } from "@/lib/utils";
-
-export const columns: ColumnDef<StudentProps>[] = [
-  {
-    id: "no",
-    header: "No.",
-    cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
-  },
-  {
-    accessorKey: "student_id",
-    header: "Student ID",
-    cell: ({ row }) => (
-      <div className="capitalize w-20">{row.getValue("student_id")}</div>
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }) => <div className=" w-36">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
-  },
-  {
-    accessorKey: "NRC",
-    header: () => <div>NRC</div>,
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("NRC")}</div>;
-    },
-  },
-  {
-    accessorKey: "phone",
-    header: () => <div>Phone</div>,
-    cell: ({ row }) => {
-      return <div className="font-medium w-32">{row.getValue("phone")}</div>;
-    },
-  },
-  {
-    accessorKey: "date_of_birth",
-    header: () => <div>Date Of Birth</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="font-medium w-32">{row.getValue("date_of_birth")}</div>
-      );
-    },
-  },
-  // {
-  //   accessorKey: "township",
-  //   header: () => <div className="text-right w-32">Township</div>,
-  //   cell: ({ row }) => {
-  //     return (
-  //       <div className="text-right font-medium">{row.getValue("township")}</div>
-  //     );
-  //   },
-  // },
-  // {
-  //   accessorKey: "address",
-  //   header: () => <div className="text-right">address</div>,
-  //   cell: ({ row }) => {
-  //     return (
-  //       <div className="text-right font-medium max-w-[500px] truncate">
-  //         {row.getValue("address")}
-  //       </div>
-  //     );
-  //   },
-  // },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const student = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(student.student_id)}
-            >
-              Copy student ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <>
-              <Link to={`/details/${student.id}`}>
-                <DropdownMenuItem>Details</DropdownMenuItem>
-              </Link>
-            </>
-            <DropdownMenuSeparator />
-            <>
-              <Link to={`/edit/${student.id}`}>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-              </Link>
-            </>
-            <DropdownMenuItem
-              onClick={async () => {
-                await deleteStudent(student.id as string);
-                setTimeout(() => {
-                  window.location.assign("/");
-                }, 1000);
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+import PaginationComponent from "@/components/PaginationComponent";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { columns } from "@/components/students/columns";
 
 export default function StudentLists() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -176,24 +50,12 @@ export default function StudentLists() {
   const [rowSelection, setRowSelection] = useState({});
 
   const [data, setData] = useState<StudentProps[]>([]);
-
   const [query, setQuery] = useState<string>("");
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [dataPerPage, setDataPerPage] = useState(6);
-
-  useEffect(() => {
-    async function fetchData() {
-      const res = await getStudents(query);
-      setData(res);
-    }
-    fetchData();
-  }, [query]);
-
-  // const data = useMemo(() => {
-  //   const lastDatIndex = currentPage * dataPerPage;
-  //   const firstDataIndex = lastDatIndex - dataPerPage;
-  //   return studentData.slice(firstDataIndex, lastDatIndex);
-  // }, [studentData, currentPage, dataPerPage]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+  const [previousPageUrl, setPreviousPageUrl] = useState<string | null>(null);
 
   const table = useReactTable({
     data,
@@ -214,18 +76,61 @@ export default function StudentLists() {
     },
   });
 
-  // const modifiedData: StudentPropsWithoutIdAndImage[] = data.map(
-  //   ({ id, image, ...rest }) => rest
-  // );
+  const PAGE_SIZE = table.getState().pagination.pageSize;
 
-  const modifiedData = combineDetailWithStudent(data);
+  async function fetchData(page: number, searchQuery: string) {
+    const res = await getStudents(
+      `/api/students/?search=${searchQuery}&page_size=${PAGE_SIZE}&page=${page}`
+    );
+    const resultsWithNo = res.results.map(
+      (student: StudentProps, index: number) => ({
+        no: index + 1 + (page - 1) * PAGE_SIZE,
+        ...student,
+      })
+    );
+
+    setData(resultsWithNo);
+    setTotalCount(res.total_count);
+    setTotalPages(res.total_pages);
+    setNextPageUrl(res.next);
+    setPreviousPageUrl(res.previous);
+  }
+
+  useEffect(() => {
+    fetchData(currentPage, query);
+  }, [query, PAGE_SIZE, currentPage]);
+
+  const handleNextPage = () => {
+    if (nextPageUrl) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (previousPageUrl) {
+      setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  async function getExcelExportData() {
+    const data = await getStudents("/api/students/");
+    return data;
+  }
+
+  // const modifiedData = combineDetailWithStudent(data);
 
   return (
     <div className="relative">
       <div className="flex justify-end items-center gap-8 mb-6">
-        <span>Total Counts: {data.length}</span>
+        <div className="text-sm">
+          Total Counts: <span className="font-semibold">{totalCount}</span>{" "}
+        </div>
         <ExcelImport />
-        <ExcelExport data={modifiedData} />
+        <ExcelExport getExcelExportData={getExcelExportData} />
         <Link to={"/add-student"}>
           <Button>Create</Button>
         </Link>
@@ -234,7 +139,10 @@ export default function StudentLists() {
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter students..."
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="max-w-sm"
           />
           <DropdownMenu>
@@ -314,15 +222,44 @@ export default function StudentLists() {
           </Table>
         </div>
         <div className="mt-4">
-          <DataTablePagination table={table} />
+          <div className="flex items-center space-x-6 lg:space-x-8">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium">Rows per page</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[5, 10, 15, 20, 25, 30].map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </div>
+          </div>
         </div>
+        <PaginationComponent
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onNext={handleNextPage}
+          onPrevious={handlePreviousPage}
+          nextPageUrl={nextPageUrl}
+          previousPageUrl={previousPageUrl}
+        />
       </div>
-      {/* <PaginationData
-        data={data}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        dataPerPage={dataPerPage}
-      /> */}
     </div>
   );
 }

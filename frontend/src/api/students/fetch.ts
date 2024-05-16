@@ -6,11 +6,9 @@ import { errorMessage } from "@/lib/errorMessage";
 import { formatDate } from "@/lib/format-date";
 import { StudentDetailsProps, StudentProps } from "@/types/types";
 
-export async function getStudents(query: string) {
-  // const url =
-  //   query !== "" ? `api/students/?search=${query}` : `api/students/?search=""`;
+export async function getStudents(url: string) {
   try {
-    const res = await axiosInstance.get(`api/students/?search=${query}`);
+    const res = await axiosInstance.get(url);
     if (res.status === 200) {
       return res.data;
     }
@@ -147,6 +145,7 @@ export async function updateStudent(id: string, values: StudentProps) {
     ) {
       formData.append("image", values.image);
     } else {
+      formData.append("remove_image", "true");
       console.warn("No image file provided for student creation.");
     }
     formData.append("student_id", values.student_id);

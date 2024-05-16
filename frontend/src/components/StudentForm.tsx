@@ -245,7 +245,11 @@ export default function StudentForm({
                 size="icon"
                 variant="destructive"
                 className={cn("absolute bottom-0 right-[44%] rounded-full")}
-                onClick={() => setPreview("")}
+                onClick={() => {
+                  setPreview("");
+                  setFile(null);
+                  form.setValue("image", null);
+                }}
               >
                 <Trash2 />
               </Button>

@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getStudentById } from "@/api/students/fetch";
 import { StudentProps } from "@/types/types";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { cn, getInitialLetter } from "@/lib/utils";
 import DetailTable from "./DetailTable";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "../ui/button";
 
 export default function StudentDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [studentData, setStudentData] = useState<StudentProps>();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,6 +29,7 @@ export default function StudentDetails() {
         setStudentData(student);
       } catch (error) {
         console.error(error);
+        navigate("/not-found");
       } finally {
         setIsLoading(false);
       }
@@ -96,6 +100,14 @@ export default function StudentDetails() {
           <CardContent>
             <DetailTable data={studentData.details} />
           </CardContent>
+          <CardFooter className={cn("flex items-center justify-end gap-4")}>
+            <Link to={`/edit/${id}`}>
+              <Button variant="outline">Edit</Button>
+            </Link>
+            <Link to="/">
+              <Button>Back</Button>
+            </Link>
+          </CardFooter>
         </Card>
       )}
     </>

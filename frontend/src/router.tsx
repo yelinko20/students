@@ -4,6 +4,7 @@ import MainLayout from "./MainLayout";
 import CreateStudent from "@/components/students/CreateStudent";
 import EditStudent from "@/components/students/EditStudent";
 import StudentDetails from "@/components/students/StudentDetails";
+import NotFound from "@/components/NotFound";
 
 const Router = () => {
   const router = createBrowserRouter([
@@ -28,6 +29,14 @@ const Router = () => {
           element: <StudentDetails />,
         },
       ],
+    },
+    {
+      path: "*",
+      element: <NotFound />,
+    },
+    {
+      path: "/not-found",
+      element: <NotFound />,
     },
   ]);
   return router;
