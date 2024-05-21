@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function NotFoundPage() {
+  const navigate = useNavigate();
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="text-center">
@@ -13,9 +15,7 @@ export default function NotFoundPage() {
         <p className="text-gray-600 mb-4">
           The page you were looking for could not be found
         </p>
-        <Button onClick={() => window.history.back()}>
-          Back to previous page
-        </Button>
+        <Button onClick={() => navigate("/")}>Back to home</Button>
       </div>
     </div>
   );

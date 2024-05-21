@@ -17,7 +17,7 @@ import { Button } from "../ui/button";
 
 export default function StudentDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [studentData, setStudentData] = useState<StudentProps>();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function StudentDetails() {
         setStudentData(student);
       } catch (error) {
         console.error(error);
-        navigate("/not-found");
+        // navigate("/not-found");
       } finally {
         setIsLoading(false);
       }

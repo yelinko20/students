@@ -14,7 +14,7 @@ export async function getStudents(url: string) {
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -96,7 +96,7 @@ export async function createStudent(values: StudentProps) {
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data?.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -107,7 +107,7 @@ export async function createStudent(values: StudentProps) {
         },
       });
     } else {
-      console.error("An unexpected error occurred:", error); // Log entire error for debugging
+      console.error("An unexpected error occurred:", error);
     }
   }
 }
@@ -120,7 +120,7 @@ export async function deleteStudent(id: string) {
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -168,7 +168,7 @@ export async function updateStudent(id: string, values: StudentProps) {
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -201,7 +201,7 @@ export async function updateStudentDetail(
     }
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -223,7 +223,7 @@ export async function getStudentById(id: string) {
     return res.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -265,7 +265,7 @@ export async function getStudentDetails(id: string) {
     return res.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",
@@ -287,7 +287,7 @@ export async function deleteStudentDetails(id: string) {
     return res.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(errorMessage(error.response?.data), {
+      toast.error(errorMessage(error.response?.data.error), {
         style: {
           backgroundColor: "red",
           color: "white",

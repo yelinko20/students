@@ -478,12 +478,18 @@ export default function StudentForm({
           />
 
           <div>
-            <div className="text-right">
+            <div className="grid grid-cols-6 my-4">
               <div></div>
-              <Button type="button" onClick={addStudentDetail}>
-                Add Student Details
-                <PlusCircle className="ml-3" />
-              </Button>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div className="text-right">
+                <Button type="button" onClick={addStudentDetail}>
+                  Add Details
+                  {/* <PlusCircle className="ml-3" /> */}
+                </Button>
+              </div>
             </div>
             {fields.map((_, index) => {
               const totalMarks = calculateTotalMarks(index);
@@ -510,7 +516,9 @@ export default function StudentForm({
                     name={`details.${index}.mark1`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mark 1</FormLabel>
+                        <FormLabel className="flex justify-end items-end my-2">
+                          Mark 1
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Add Mark 1"
@@ -518,6 +526,7 @@ export default function StudentForm({
                             // min={1}
                             // max={100}
                             {...field}
+                            className="text-right"
                           />
                         </FormControl>
                         <FormMessage />
@@ -529,7 +538,9 @@ export default function StudentForm({
                     name={`details.${index}.mark2`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mark 2</FormLabel>
+                        <FormLabel className="flex justify-end items-end my-2">
+                          Mark 2
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Add Mark 2"
@@ -537,6 +548,7 @@ export default function StudentForm({
                             // min={1}
                             // max={100}
                             {...field}
+                            className="text-right"
                           />
                         </FormControl>
                         <FormMessage />
@@ -548,7 +560,9 @@ export default function StudentForm({
                     name={`details.${index}.mark3`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mark 3</FormLabel>
+                        <FormLabel className="flex justify-end items-end my-2">
+                          Mark 3
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Add Mark 3"
@@ -556,6 +570,7 @@ export default function StudentForm({
                             {...field}
                             // min={1}
                             // max={100}
+                            className="text-right"
                           />
                         </FormControl>
                         <FormMessage />
@@ -568,7 +583,9 @@ export default function StudentForm({
                     name={`details.${index}.total_marks`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Marks</FormLabel>
+                        <FormLabel className="flex justify-end items-end my-2">
+                          Total Marks
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Total Marks"
@@ -576,20 +593,22 @@ export default function StudentForm({
                             {...field}
                             value={totalMarks}
                             disabled
+                            className="text-right"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center gap-4 mt-7">
+                  <div className="flex items-center justify-end gap-4 mt-7">
                     <Button
                       variant="destructive"
-                      size="icon"
+                      // size="icon"
                       type="button"
                       onClick={() => remove(index)}
                     >
-                      <Trash2 />
+                      Delete
+                      {/* <Trash2 className=" ml-2" /> */}
                     </Button>
                   </div>
                 </div>

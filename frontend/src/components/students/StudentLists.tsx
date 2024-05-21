@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { columns } from "@/components/students/columns";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function StudentLists() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -77,6 +78,7 @@ export default function StudentLists() {
   });
 
   const PAGE_SIZE = table.getState().pagination.pageSize;
+  const debounceQuery = useDebounce(query, 300);
 
   async function fetchData(page: number, searchQuery: string) {
     const res = await getStudents(
@@ -97,8 +99,8 @@ export default function StudentLists() {
   }
 
   useEffect(() => {
-    fetchData(currentPage, query);
-  }, [query, PAGE_SIZE, currentPage]);
+    fetchData(currentPage, debounceQuery);
+  }, [debounceQuery, PAGE_SIZE, currentPage]);
 
   const handleNextPage = () => {
     if (nextPageUrl) {
